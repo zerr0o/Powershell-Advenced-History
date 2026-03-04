@@ -1,49 +1,49 @@
 # Install.ps1
-# Installe Find-History dans le profil PowerShell
+# Installs Find-History into the PowerShell profile
 
 $scriptName = "Find-History.ps1"
 $scriptSource = Join-Path $PSScriptRoot "PowerShell\$scriptName"
 
 if (-not (Test-Path $scriptSource)) {
-    Write-Host "Erreur : $scriptSource introuvable." -ForegroundColor Red
-    Write-Host "Lancez ce script depuis la racine du depot." -ForegroundColor Red
+    Write-Host "Error: $scriptSource not found." -ForegroundColor Red
+    Write-Host "Run this script from the repository root." -ForegroundColor Red
     exit 1
 }
 
-# Dossier d'installation
+# Installation directory
 $installDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) "PowerShell\Scripts"
 if (-not (Test-Path $installDir)) {
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 }
 
-# Copier le script
+# Copy the script
 $installPath = Join-Path $installDir $scriptName
 Copy-Item -Path $scriptSource -Destination $installPath -Force
-Write-Host "Script copie dans : $installPath" -ForegroundColor Green
+Write-Host "Script copied to: $installPath" -ForegroundColor Green
 
-# Ajouter au profil PowerShell
+# Add to PowerShell profile
 $profilePath = $PROFILE.CurrentUserCurrentHost
 
 if (-not (Test-Path $profilePath)) {
     New-Item -ItemType File -Path $profilePath -Force | Out-Null
-    Write-Host "Profil PowerShell cree : $profilePath" -ForegroundColor Yellow
+    Write-Host "PowerShell profile created: $profilePath" -ForegroundColor Yellow
 }
 
 $sourceLine = ". `"$installPath`""
 
 $profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
 if ($profileContent -and $profileContent.Contains($sourceLine)) {
-    Write-Host "Deja present dans le profil. Rien a ajouter." -ForegroundColor DarkGray
+    Write-Host "Already present in profile. Nothing to add." -ForegroundColor DarkGray
 } else {
-    Add-Content -Path $profilePath -Value "`n# Find-History : recherche interactive dans l'historique (Ctrl+H)`n$sourceLine"
-    Write-Host "Ligne ajoutee au profil : $profilePath" -ForegroundColor Green
+    Add-Content -Path $profilePath -Value "`n# Find-History: interactive history search (Ctrl+H)`n$sourceLine"
+    Write-Host "Line added to profile: $profilePath" -ForegroundColor Green
 }
 
 Write-Host ""
-Write-Host "Installation terminee !" -ForegroundColor Cyan
-Write-Host "Redemarrez PowerShell ou tapez :" -ForegroundColor Gray
+Write-Host "Installation complete!" -ForegroundColor Cyan
+Write-Host "Restart PowerShell or run:" -ForegroundColor Gray
 Write-Host "  . `"$installPath`"" -ForegroundColor White
 Write-Host ""
-Write-Host "Utilisation :" -ForegroundColor Cyan
-Write-Host "  Ctrl+H  -  Recherche interactive (injection directe sur le prompt)" -ForegroundColor White
-Write-Host "  fh      -  Recherche interactive (copie dans le presse-papier)" -ForegroundColor White
+Write-Host "Usage:" -ForegroundColor Cyan
+Write-Host "  Ctrl+H  -  Interactive search (injects directly onto the prompt)" -ForegroundColor White
+Write-Host "  fh      -  Interactive search (copies to clipboard)" -ForegroundColor White

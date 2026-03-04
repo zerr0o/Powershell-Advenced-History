@@ -1,71 +1,72 @@
 # Find-History
 
-Recherche interactive plein ecran dans l'historique PowerShell.
+Interactive full-screen search through PowerShell command history.
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue)
-![Windows Terminal](https://img.shields.io/badge/Windows%20Terminal-recommand%C3%A9-brightgreen)
+![Windows Terminal](https://img.shields.io/badge/Windows%20Terminal-recommended-brightgreen)
 
-## Fonctionnalites
+## Features
 
-- **Recherche en temps reel** avec support regex dans tout l'historique PSReadLine
-- **Affichage plein ecran** via alternate screen buffer (comme `vim`, `less`, `htop`)
-- **Navigation clavier** fluide avec fleches, PageUp/PageDown, Home/End
-- **Injection directe** sur le prompt via `Ctrl+H` — pas besoin de copier-coller
-- **Retour propre** : l'ecran precedent est restaure tel quel apres la recherche
+- **Real-time search** with regex support across your entire PSReadLine history
+- **Full-screen display** using alternate screen buffer (like `vim`, `less`, `htop`)
+- **Smooth keyboard navigation** with arrows, PageUp/PageDown, Home/End
+- **Direct injection** onto the prompt via `Ctrl+H` — no copy-paste needed
+- **Clean restore**: your previous screen is restored exactly as it was after searching
+- **Most recent first**: results are sorted with newest commands at the top
 
 ## Installation
 
-### Automatique
+### Automatic
 
 ```powershell
-git clone https://github.com/<votre-user>/Powershell-find-history.git
+git clone https://github.com/<your-user>/Powershell-find-history.git
 cd Powershell-find-history
 .\Install.ps1
 ```
 
-Le script d'installation :
+The install script will:
 
-1. Copie `Find-History.ps1` dans `~/Documents/PowerShell/Scripts/`
-2. Ajoute le chargement automatique dans votre profil PowerShell
-3. Disponible a chaque nouvelle session
+1. Copy `Find-History.ps1` to `~/Documents/PowerShell/Scripts/`
+2. Add auto-loading to your PowerShell profile
+3. Available in every new session
 
-### Manuelle
+### Manual
 
-Ajoutez cette ligne a votre profil PowerShell (`$PROFILE`) :
+Add this line to your PowerShell profile (`$PROFILE`):
 
 ```powershell
-. "chemin\vers\Find-History.ps1"
+. "path\to\Find-History.ps1"
 ```
 
-## Utilisation
+## Usage
 
-| Raccourci | Action |
-|-----------|--------|
-| `Ctrl+H` | Lance la recherche et **injecte la commande directement sur le prompt** |
-| `fh` | Lance la recherche et **copie dans le presse-papier** (Ctrl+V pour coller) |
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+H` | Search and **inject the command directly onto the prompt** |
+| `fh` | Search and **copy to clipboard** (Ctrl+V to paste) |
 
-### Dans l'interface de recherche
+### Inside the search interface
 
-| Touche | Action |
-|--------|--------|
-| Fleches haut/bas | Naviguer dans les resultats |
-| PageUp / PageDown | Sauter de 10 en 10 |
-| Home / End | Debut / fin de la liste |
-| Entree | Selectionner la commande |
-| Echap | Quitter sans rien selectionner |
-| Suppr | Effacer la recherche |
-| Backspace | Supprimer le dernier caractere |
+| Key | Action |
+|-----|--------|
+| Up / Down | Navigate through results |
+| PageUp / PageDown | Jump by page |
+| Home / End | Go to first / last result |
+| Enter | Select the command |
+| Escape | Quit without selecting |
+| Delete | Clear the search |
+| Backspace | Remove last character |
 
-Tapez directement pour filtrer — le filtre supporte les **expressions regulieres**.
+Type directly to filter — the filter supports **regular expressions**.
 
-## Pourquoi Ctrl+H et pas fh ?
+## Why Ctrl+H instead of fh?
 
-`Ctrl+H` s'execute dans le contexte PSReadLine, ce qui permet d'**injecter** la commande directement sur la ligne de prompt. Vous n'avez qu'a appuyer sur Entree pour l'executer.
+`Ctrl+H` runs inside the PSReadLine context, which allows **injecting** the command directly onto the prompt line. Just press Enter to execute it.
 
-`fh` est une commande classique — une fois executee, PowerShell affiche un nouveau prompt vierge. Il est impossible d'ecrire sur ce nouveau prompt depuis la commande precedente, d'ou le fallback presse-papier.
+`fh` is a regular command — once it finishes, PowerShell displays a fresh prompt. There is no way to write to that new prompt from the previous command, hence the clipboard fallback.
 
-## Compatibilite
+## Compatibility
 
-- **PowerShell 5.1** (Windows PowerShell) et **PowerShell 7+**
-- **Windows Terminal** recommande pour un rendu optimal
-- Necessite le module **PSReadLine** (inclus par defaut)
+- **PowerShell 5.1** (Windows PowerShell) and **PowerShell 7+**
+- **Windows Terminal** recommended for best rendering
+- Requires the **PSReadLine** module (included by default)

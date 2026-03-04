@@ -1,20 +1,20 @@
 # Find-History.ps1
-# Outil de recherche interactive dans l'historique PowerShell
-# Utilise l'alternate screen buffer pour un affichage plein ecran propre
+# Interactive full-screen search through PowerShell history
+# Uses alternate screen buffer for a clean full-screen display
 #
-# Utilisation :
-#   - Ctrl+R : lance la recherche et injecte la commande directement sur le prompt
-#   - fh     : lance la recherche et copie la commande dans le presse-papier
+# Usage:
+#   - Ctrl+H : search and inject the command directly onto the prompt
+#   - fh     : search and copy the command to clipboard
 
 function Invoke-HistorySearch {
     param([int]$MaxCommands = 1000)
 
-    # Importer PSReadLine si necessaire
+    # Import PSReadLine if needed
     if (-not (Get-Module PSReadLine)) {
         Import-Module PSReadLine -ErrorAction SilentlyContinue
     }
 
-    # Obtenir le chemin de l'historique
+    # Get history file path
     try {
         $historyPath = [Microsoft.PowerShell.PSConsoleReadLine]::GetHistorySavePath()
     } catch {
@@ -26,6 +26,7 @@ function Invoke-HistorySearch {
     }
 
     $allHistory = Get-Content $historyPath -Tail $MaxCommands -Encoding UTF8 | Where-Object { $_.Trim() }
+    [Array]::Reverse($allHistory)
 
     if ($allHistory.Count -eq 0) {
         return $null
@@ -33,9 +34,9 @@ function Invoke-HistorySearch {
 
     $esc = [char]0x1b
 
-    # Basculer vers l'alternate screen buffer
+    # Switch to alternate screen buffer
     [Console]::Write("$esc[?1049h")
-    # Masquer le curseur
+    # Hide cursor
     [Console]::Write("$esc[?25l")
 
     $searchTerm = ""
@@ -48,7 +49,7 @@ function Invoke-HistorySearch {
             $width = [Console]::WindowWidth
             $height = [Console]::WindowHeight
 
-            # Filtrer
+            # Filter
             if ($searchTerm -eq "") {
                 $filtered = $allHistory
             } else {
@@ -63,46 +64,46 @@ function Invoke-HistorySearch {
                 $selectedIndex = [Math]::Max(0, $filtered.Count - 1)
             }
 
-            # Construire le contenu de l'ecran dans un buffer
+            # Build screen content in a buffer
             $buf = [System.Text.StringBuilder]::new()
 
-            # Repositionner en haut a gauche
+            # Move cursor to top-left
             $null = $buf.Append("$esc[H")
 
-            # Ligne 1 : Titre
-            $title = " RECHERCHE D'HISTORIQUE POWERSHELL "
+            # Line 1: Title
+            $title = " POWERSHELL HISTORY SEARCH "
             $pad = [Math]::Max(0, $width - $title.Length)
             $leftPad = [Math]::Floor($pad / 2)
             $rightPad = $pad - $leftPad
             $null = $buf.Append("$esc[46;30m$(' ' * $leftPad)$title$(' ' * $rightPad)$esc[0m`n")
 
-            # Ligne 2 : vide
+            # Line 2: empty
             $null = $buf.Append("$esc[K`n")
 
-            # Ligne 3 : Barre de recherche
-            $searchDisplay = "  Recherche : ${searchTerm}_"
+            # Line 3: Search bar
+            $searchDisplay = "  Search: ${searchTerm}_"
             if ($searchDisplay.Length -lt $width) {
                 $searchDisplay = $searchDisplay + (' ' * ($width - $searchDisplay.Length))
             }
             $null = $buf.Append("$esc[33m$searchDisplay$esc[0m`n")
 
-            # Ligne 4 : Info resultats
-            $infoLine = "  $($filtered.Count) / $($allHistory.Count) commandes"
+            # Line 4: Results info
+            $infoLine = "  $($filtered.Count) / $($allHistory.Count) commands"
             if ($infoLine.Length -lt $width) { $infoLine = $infoLine + (' ' * ($width - $infoLine.Length)) }
             $null = $buf.Append("$esc[90m$infoLine$esc[0m`n")
 
-            # Ligne 5 : Separateur
+            # Line 5: Separator
             $sepLen = [Math]::Min($width - 4, 60)
             $sep = "  " + ('-' * $sepLen)
             if ($sep.Length -lt $width) { $sep = $sep + (' ' * ($width - $sep.Length)) }
             $null = $buf.Append("$esc[90m$sep$esc[0m`n")
 
-            # Zone de resultats
+            # Results area
             $headerLines = 5
             $footerLines = 2
             $availableLines = $height - $headerLines - $footerLines
 
-            # Fenetre de scroll
+            # Scroll window
             $displayCount = [Math]::Min($filtered.Count, $availableLines)
             $startIdx = 0
             if ($selectedIndex -ge $displayCount) {
@@ -128,31 +129,31 @@ function Invoke-HistorySearch {
             }
 
             if ($filtered.Count -eq 0) {
-                $noResult = "    (aucun resultat)"
+                $noResult = "    (no results)"
                 if ($noResult.Length -lt $width) { $noResult = $noResult + (' ' * ($width - $noResult.Length)) }
                 $null = $buf.Append("$esc[90m$noResult$esc[0m`n")
                 $resultLines++
             }
 
-            # Remplir les lignes vides restantes
+            # Fill remaining empty lines
             $emptyLine = ' ' * $width
             for ($i = $resultLines; $i -lt $availableLines; $i++) {
                 $null = $buf.Append("$emptyLine`n")
             }
 
-            # Ligne vide avant le footer
+            # Empty line before footer
             $null = $buf.Append("$esc[K`n")
 
             # Footer
-            $footer = "  [^/v] Naviguer   [Entree] Selectionner   [Echap] Quitter   [PgUp/PgDn] Page   [Suppr] Effacer"
+            $footer = "  [Up/Down] Navigate   [Enter] Select   [Esc] Quit   [PgUp/PgDn] Page   [Del] Clear"
             if ($footer.Length -gt $width) { $footer = $footer.Substring(0, $width) }
             if ($footer.Length -lt $width) { $footer = $footer + (' ' * ($width - $footer.Length)) }
             $null = $buf.Append("$esc[46;30m$footer$esc[0m")
 
-            # Envoyer tout d'un coup
+            # Flush to screen
             [Console]::Write($buf.ToString())
 
-            # Lire la touche
+            # Read key
             $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
             switch ($key.VirtualKeyCode) {
@@ -162,13 +163,13 @@ function Invoke-HistorySearch {
                 34 { $selectedIndex = [Math]::Min($filtered.Count - 1, $selectedIndex + $availableLines) }
                 36 { $selectedIndex = 0 }
                 35 { $selectedIndex = [Math]::Max(0, $filtered.Count - 1) }
-                13 { # Entree
+                13 { # Enter
                     if ($filtered.Count -gt 0) {
                         $selected = $filtered[$selectedIndex]
                     }
                     break
                 }
-                27 { break } # Echap
+                27 { break } # Escape
                 8 { # Backspace
                     if ($searchTerm.Length -gt 0) {
                         $searchTerm = $searchTerm.Substring(0, $searchTerm.Length - 1)
@@ -188,33 +189,33 @@ function Invoke-HistorySearch {
                 }
             }
 
-            # Sortir si Entree ou Echap
+            # Exit on Enter or Escape
             if ($key.VirtualKeyCode -eq 13 -or $key.VirtualKeyCode -eq 27) { break }
 
         } while ($true)
     }
     finally {
-        # Toujours restaurer l'ecran principal
-        [Console]::Write("$esc[?25h")   # Re-afficher le curseur
-        [Console]::Write("$esc[?1049l") # Revenir au screen buffer principal
+        # Always restore main screen
+        [Console]::Write("$esc[?25h")   # Show cursor
+        [Console]::Write("$esc[?1049l") # Switch back to main screen buffer
     }
 
     return $selected
 }
 
-# Fonction standalone (fh) : copie dans le presse-papier
+# Standalone function (fh): copies to clipboard
 function Find-History {
     param([int]$MaxCommands = 1000)
     $result = Invoke-HistorySearch -MaxCommands $MaxCommands
     if ($result) {
         Set-Clipboard -Value $result
-        Write-Host "Commande copiee : " -ForegroundColor DarkGray -NoNewline
+        Write-Host "Copied: " -ForegroundColor DarkGray -NoNewline
         Write-Host $result -ForegroundColor Green
-        Write-Host "(Ctrl+V pour coller)" -ForegroundColor DarkGray
+        Write-Host "(Ctrl+V to paste)" -ForegroundColor DarkGray
     }
 }
 
-# Binding Ctrl+H : injecte directement sur le prompt
+# Ctrl+H binding: injects directly onto the prompt
 if (Get-Module PSReadLine) {
     Set-PSReadLineKeyHandler -Chord 'Ctrl+h' -ScriptBlock {
         $result = Invoke-HistorySearch
@@ -222,7 +223,7 @@ if (Get-Module PSReadLine) {
             [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert($result)
         }
-    } -Description "Recherche interactive dans l'historique"
+    } -Description "Interactive history search"
 }
 
 Set-Alias -Name fh -Value Find-History -Scope Global -Force
