@@ -1,7 +1,7 @@
 # Install.ps1
 # Installs Find-History into the PowerShell profile
 
-$scriptName = "Find-History.ps1"
+$scriptName = "PowerShell-Advanced-History.ps1"
 $scriptSource = Join-Path $PSScriptRoot "PowerShell\$scriptName"
 
 if (-not (Test-Path $scriptSource)) {
@@ -35,7 +35,7 @@ $profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
 if ($profileContent -and $profileContent.Contains($sourceLine)) {
     Write-Host "Already present in profile. Nothing to add." -ForegroundColor DarkGray
 } else {
-    Add-Content -Path $profilePath -Value "`n# Find-History: interactive history search (Ctrl+H)`n$sourceLine"
+    Add-Content -Path $profilePath -Value "`n# PowerShell-Advanced-History: interactive history search (Ctrl+H)`n$sourceLine"
     Write-Host "Line added to profile: $profilePath" -ForegroundColor Green
 }
 
@@ -46,4 +46,4 @@ Write-Host "  . `"$installPath`"" -ForegroundColor White
 Write-Host ""
 Write-Host "Usage:" -ForegroundColor Cyan
 Write-Host "  Ctrl+H  -  Interactive search (injects directly onto the prompt)" -ForegroundColor White
-Write-Host "  fh      -  Interactive search (copies to clipboard)" -ForegroundColor White
+Write-Host "  pah     -  Interactive search (copies to clipboard)" -ForegroundColor White

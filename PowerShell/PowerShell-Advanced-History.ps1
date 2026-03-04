@@ -4,7 +4,7 @@
 #
 # Usage:
 #   - Ctrl+H : search and inject the command directly onto the prompt
-#   - fh     : search and copy the command to clipboard
+#   - pah    : search and copy the command to clipboard
 
 function Invoke-HistorySearch {
     param([int]$MaxCommands = 1000)
@@ -226,4 +226,4 @@ if (Get-Module PSReadLine) {
     } -Description "Interactive history search"
 }
 
-Set-Alias -Name fh -Value Find-History -Scope Global -Force
+Set-Alias -Name pah -Value Find-History -Scope Global -Force
