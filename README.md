@@ -5,6 +5,12 @@ Interactive full-screen search through PowerShell command history.
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue)
 ![Windows Terminal](https://img.shields.io/badge/Windows%20Terminal-recommended-brightgreen)
 
+![PowerShell-Advanced-History](PowerShell-Advanced-History.png)
+
+## Demo
+
+<video src="demo.mp4" controls width="100%"></video>
+
 ## Features
 
 - **Real-time search** with regex support across your entire PSReadLine history
